@@ -1,0 +1,41 @@
+# Allwinner H3 quad core 512MiB SoC 2xGbE/WiFi/BT
+BOARD_NAME="NanoPi R1S-H3"
+BOARDFAMILY="sun8i"
+BOOTCONFIG="nanopi_r1s_h3_defconfig"
+MODULES="g_serial ledtrig_netdev"
+SERIALCON="ttyS0,ttyGS0"
+KERNEL_TARGET="edge"
+HAS_VIDEO_OUTPUT="no"
+BOOT_FDT_FILE="sun8i-h3-nanopi-r1s.dtb"
+
+
+function post_family_tweaks_bsp__nanopi_r1s_h3() {
+
+display_alert "Creating board support LEDs config for nanopi-r1s-h3"
+cat <<- EOF > "${destination}"/etc/armbian-leds.conf
+	[/sys/class/leds/nanopi:green:lan]
+	trigger=netdev
+	device_name=lan0
+	link=1
+	tx=0
+	rx=1
+
+	[/sys/class/leds/nanopi:green:wan]
+	trigger=netdev
+	device_name=wan0
+	link=1
+	tx=0
+	rx=1
+
+	[/sys/class/leds/nanopi:red:status]
+	trigger=heartbeat
+EOF
+
+display_alert "Creating board support network rename rule for nanopi-r1s-h3"
+mkdir -p "${destination}"/etc/udev/rules.d/
+cat <<- EOF > "${destination}"/etc/udev/rules.d/70-rename-lan.rules
+	SUBSYSTEM=="net", ACTION=="add", DRIVERS=="r8152", DEVPATH=="/devices/platform/soc/1c1b000.usb/*", NAME="lan0"
+	SUBSYSTEM=="net", ACTION=="add", DRIVERS=="dwmac-sun8i", DEVPATH=="/devices/platform/soc/1c30000.ethernet/*", NAME="wan0"
+EOF
+
+}

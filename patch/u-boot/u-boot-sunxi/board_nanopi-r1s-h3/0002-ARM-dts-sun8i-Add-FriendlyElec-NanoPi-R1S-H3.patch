@@ -1,0 +1,303 @@
+From d3e63767371f699fb15c197024b8a3e127b2d995 Mon Sep 17 00:00:00 2001
+From: Darsey Litzenberger <dlitz@dlitz.net>
+Date: Sun, 11 Jun 2023 12:07:29 -0600
+Subject: [PATCH 2/3] ARM: dts: sun8i: Add FriendlyElec NanoPi R1S-H3
+
+---
+ arch/arm/dts/Makefile                |   1 +
+ arch/arm/dts/sun8i-h3-nanopi-r1s.dts | 223 +++++++++++++++++++++++++++
+ board/sunxi/MAINTAINERS              |   5 +
+ configs/nanopi_r1s_h3_defconfig      |  23 +++
+ 4 files changed, 252 insertions(+)
+ create mode 100644 arch/arm/dts/sun8i-h3-nanopi-r1s.dts
+ create mode 100644 configs/nanopi_r1s_h3_defconfig
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 965895bc2a..c7b690aeea 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -666,6 +666,7 @@ dtb-$(CONFIG_MACH_SUN8I_H3) += \
+ 	sun8i-h3-nanopi-neo.dtb \
+ 	sun8i-h3-nanopi-neo-air.dtb \
+ 	sun8i-h3-nanopi-r1.dtb \
++	sun8i-h3-nanopi-r1s.dtb \
+ 	sun8i-h3-orangepi-2.dtb \
+ 	sun8i-h3-orangepi-lite.dtb \
+ 	sun8i-h3-orangepi-one.dtb \
+diff --git a/arch/arm/dts/sun8i-h3-nanopi-r1s.dts b/arch/arm/dts/sun8i-h3-nanopi-r1s.dts
+new file mode 100644
+index 0000000000..6212d1ba87
+--- /dev/null
++++ b/arch/arm/dts/sun8i-h3-nanopi-r1s.dts
+@@ -0,0 +1,223 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (C) 2019 Igor Pecovnik <igor@armbian.com>
++ * Copyright (C) 2020 Jayantajit Gogoi <jayanta.gogoi525@gmail.com>
++ * Copyright (C) 2020 Yu-Tung Chang <mtwget@gmail.com>
++*/
++
++#include "sun8i-h3-nanopi.dtsi"
++#include <dt-bindings/leds/common.h>
++
++/ {
++	model = "FriendlyElec NanoPi-R1S-H3";
++	compatible = "friendlyelec,nanopi-r1s-h3", "allwinner,sun8i-h3";
++
++	aliases {
++		serial1 = &uart1;
++		ethernet0 = &emac;
++		ethernet1 = &wifi;
++		ethernet2 = &usb_ethernet;
++	};
++
++	reg_vcc_dram: vcc-dram {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc-dram";
++		regulator-min-microvolt = <1500000>;
++		regulator-max-microvolt = <1500000>;
++		regulator-always-on;
++		regulator-boot-on;
++		enable-active-high;
++		gpio = <&r_pio 0 9 GPIO_ACTIVE_HIGH>; /* PL9 */
++		vin-supply = <&reg_vcc5v0>;
++	};
++
++	reg_vcc2v5: vcc2v5 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc2v5";
++		regulator-min-microvolt = <2500000>;
++		regulator-max-microvolt = <2500000>;
++	};
++
++	reg_gmac_3v3: gmac-3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "gmac-3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		startup-delay-us = <100000>;
++		enable-active-high;
++		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>; /* PD6 */
++	};
++
++	reg_vdd_cpux: gpio-regulator {
++		compatible = "regulator-gpio";
++		regulator-name = "vdd-cpux";
++		regulator-type = "voltage";
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-min-microvolt = <1100000>;
++		regulator-max-microvolt = <1300000>;
++		regulator-ramp-delay = <50>;
++		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* PL6 */
++		gpios-states = <0x1>;
++		states = <1100000 0x0>,
++			 <1300000 0x1>;
++		vin-supply = <&reg_vcc5v0>;
++	};
++
++	wifi_pwrseq: wifi_pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
++		clocks = <&rtc CLK_OSC32K_FANOUT>;
++		clock-names = "ext_clock";
++	};
++
++	leds {
++		led-0 {
++			label = "nanopi:red:status";
++			function = LED_FUNCTION_STATUS;
++			color = <LED_COLOR_ID_RED>;
++		};
++
++		led-1 {
++			status = "disabled";
++		};
++
++		led-2 {
++			label = "nanopi:green:wan";
++			function = LED_FUNCTION_WAN;
++			color = <LED_COLOR_ID_GREEN>;
++			gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>; /* PG11 */
++		};
++
++		led-3 {
++			label = "nanopi:green:lan";
++			function = LED_FUNCTION_LAN;
++			color = <LED_COLOR_ID_GREEN>;
++			gpios = <&pio 0 9 GPIO_ACTIVE_HIGH>; /* PA9 */
++		};
++	};
++};
++
++&cpu0 {
++	cpu-supply = <&reg_vdd_cpux>;
++};
++
++&ehci1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	status = "okay";
++
++	usb_ethernet: ethernet@1 {	/* hard-wired USB ethernet device */
++		compatible = "usbbda,8153";
++		reg = <1>;
++	};
++};
++
++&ehci2 {
++	status = "okay";
++};
++
++&emac {
++	pinctrl-names = "default";
++	pinctrl-0 = <&emac_rgmii_pins>;
++	phy-supply = <&reg_gmac_3v3>;
++	phy-handle = <&ext_rgmii_phy>;
++	phy-mode = "rgmii-id";
++	status = "okay";
++};
++
++&external_mdio {
++	ext_rgmii_phy: ethernet-phy@7 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <7>;
++		reset-gpios = <&pio 3 14 GPIO_ACTIVE_LOW>; /* PD14 */
++	};
++};
++
++&mmc1 {
++	vmmc-supply = <&reg_vcc3v3>;
++	vqmmc-supply = <&reg_vcc3v3>;
++	mmc-pwrseq = <&wifi_pwrseq>;
++	bus-width = <4>;
++	non-removable;
++	status = "okay";
++
++	/* compatible with rtl8189/ap6256 */
++	wifi: wifi@1 {
++		reg = <1>;
++		compatible = "brcm,bcm4329-fmac";
++		interrupt-parent = <&pio>;
++		interrupts = <6 10 IRQ_TYPE_LEVEL_HIGH>; /* PG10 / EINT10 */
++		// TODO(dlitz): Should the above be IRQ_TYPE_LEVEL_LOW like on other devices?
++		interrupt-names = "host-wake";
++	};
++};
++
++&ohci1 {
++	status = "okay";
++};
++
++&ohci2 {
++	status = "okay";
++};
++
++&uart1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart1_pins>;
++	status = "okay";
++};
++
++&uart3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
++	uart-has-rtscts;
++	status = "okay";
++
++	bluetooth {
++		compatible = "brcm,bcm43438-bt";
++		clocks = <&rtc CLK_OSC32K_FANOUT>;
++		clock-names = "lpo";
++		vbat-supply = <&reg_vcc3v3>;
++		vddio-supply = <&reg_vcc3v3>;
++		device-wakeup-gpios = <&pio 0 8 GPIO_ACTIVE_HIGH>; /* PA8 */
++		host-wakeup-gpios = <&pio 0 7 GPIO_ACTIVE_HIGH>; /* PA7 */  /* deprecated */
++		shutdown-gpios = <&pio 6 13 GPIO_ACTIVE_HIGH>; /* PG13 */
++		interrupt-parent = <&pio>;
++		interrupts = <0 7 IRQ_TYPE_LEVEL_HIGH>; /* PA7 / EINT7 */
++		interrupt-names = "host-wakeup";
++	};
++};
++
++&usb_otg {
++	status = "okay";
++	dr_mode = "otg";
++};
++
++&usbphy {
++	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++
++	eeprom@51 {
++		compatible = "microchip,24c02";
++		reg = <0x51>;
++		pagesize = <16>;
++	};
++};
++
++&pio {
++	vcc-pa-supply = <&reg_vcc3v3>;	// VCC_IO
++	vcc-pc-supply = <&reg_vcc3v3>;	// VCC_IO
++	vcc-pd-supply = <&reg_vcc2v5>;	// VCC_PD
++	vcc-pe-supply = <&reg_vcc3v3>;	// VCC_IO
++	vcc-pf-supply = <&reg_vcc3v3>;	// VCC_IO
++	vcc-pg-supply = <&reg_vcc3v3>;	// VCC_PG
++};
++
++&r_pio {
++	vcc-pl-supply = <&reg_vcc3v3>;	// VCC_IO
++};
+diff --git a/board/sunxi/MAINTAINERS b/board/sunxi/MAINTAINERS
+index 5a0b598a33..7e16cc89cd 100644
+--- a/board/sunxi/MAINTAINERS
++++ b/board/sunxi/MAINTAINERS
+@@ -363,6 +363,11 @@ M:	Jelle van der Waa <jelle@vdwaa.nl>
+ S:	Maintained
+ F:	configs/nanopi_neo_air_defconfig
+ 
++NANOPI-R1S-H3 BOARD
++M:	Darsey Litzenberger <dlitz+uboot@dlitz.net>
++S:	Maintained
++F:	configs/nanopi_r1s_h3_defconfig
++
+ NANOPI-R1S-H5 BOARD
+ M:	Chukun Pan <amadeus@jmu.edu.cn>
+ S:	Maintained
+diff --git a/configs/nanopi_r1s_h3_defconfig b/configs/nanopi_r1s_h3_defconfig
+new file mode 100644
+index 0000000000..0e2cec75a7
+--- /dev/null
++++ b/configs/nanopi_r1s_h3_defconfig
+@@ -0,0 +1,23 @@
++CONFIG_ARM=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_DEFAULT_DEVICE_TREE="sun8i-h3-nanopi-r1s"
++CONFIG_SPL=y
++CONFIG_IDENT_STRING=" NanoPi-R1S-H3"
++CONFIG_MACH_SUN8I_H3=y
++CONFIG_DRAM_CLK=408
++CONFIG_MACPWR="PD6"
++CONFIG_USB0_ID_DET="PG12"
++# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_CMD_UMS_ABORT_KEYED=y
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_SUN8I_EMAC=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_MUSB_GADGET=y
++CONFIG_USB_HOST_ETHER=y
++CONFIG_USB_ETHER_RTL8152=y
++CONFIG_USB_GADGET_MANUFACTURER="FriendlyElec"
++CONFIG_USB_GADGET_VBUS_DRAW=500
++CONFIG_USB_FUNCTION_ACM=y
+-- 
+2.39.2
+
