@@ -45,7 +45,7 @@ function prepare_partitions() {
 	# mkopts[fat] is empty
 	mkopts[ext2]=''
 	# mkopts[f2fs] is empty
-	mkopts[btrfs]='-m dup'
+	mkopts[btrfs]="-m dup --checksum ${BTRFS_CHECKSUM:-crc32c}"
 	# mkopts[nilfs2] is empty
 	# mkopts[xfs] is empty
 	# mkopts[nfs] is empty
