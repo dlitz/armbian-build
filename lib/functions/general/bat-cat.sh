@@ -96,7 +96,8 @@ function run_tool_batcat() {
 	if [[ "${bat_cat_columns}" -lt 60 ]]; then               # but lever less than 60
 		bat_cat_columns=60
 	fi
-	case "$(background_dark_or_light)" in
+	case "${background_dark_or_light-missing}" in
+		missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 		dark)	declare bat_cat_theme="Dracula" ;;
 		*)	declare bat_cat_theme="ansi" ;;
 	esac

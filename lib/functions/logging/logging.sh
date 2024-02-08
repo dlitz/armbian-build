@@ -19,13 +19,27 @@ function logging_init() {
 		declare -g SHOW_DEBUG="${SHOW_DEBUG:-"yes"}"
 	fi
 
+	# detect terminal background color
+	case "${COLORFGBG+${COLORFGBG#*;}}" in
+		[0-6]|8)
+			declare -g background_dark_or_light=dark
+			;;
+		7|9|1[0-5])
+			declare -g background_dark_or_light=light
+			;;
+		*)
+			printf 'WARNING: MISSING COLORFGBG! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s		#  DEBUG FIXME(dlitz)   
+			declare -g background_dark_or_light=
+			;;
+	esac
+
 	# globals
 	declare -g padding="" left_marker="[" right_marker="]"
 	declare -g normal_color="\x1B[0m" gray_color="\e[1;30m" # "bright black", which is grey
 	declare -g bright_red_color="\e[1;31m" red_color="\e[0;31m"
 	declare -g bright_blue_color="\e[1;34m" blue_color="\e[0;34m"
 	declare -g bright_magenta_color="\e[1;35m" magenta_color="\e[0;35m"
-	case "$(background_dark_or_light)" in
+	case "${background_dark_or_light}" in
 		light)
 			# bold dim yellow, to ensure readability
 			declare -g bright_yellow_color="\e[1;2;33m"
@@ -195,15 +209,4 @@ function discard_logs_tmp_dir() {
 	else
 		rm -rf "${LOGDIR:?}"/* # Note this is protected by :?
 	fi
-}
-
-function background_dark_or_light() {
-	case "${COLORFGBG+${COLORFGBG#*;}}" in
-		[0-6]|8)
-			echo 'dark'
-			;;
-		7|9|1[0-5])
-			echo 'light'
-			;;
-	esac
 }

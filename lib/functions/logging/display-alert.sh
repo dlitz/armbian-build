@@ -30,7 +30,8 @@ function display_alert() {
 				skip_screen=1
 			fi
 			level_indicator="🐛"
-			case "$(background_dark_or_light)" in
+			case "${background_dark_or_light-missing}" in
+				missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 				light)	inline_logs_color="\e[1;2;33m" ;;
 				*)	inline_logs_color="\e[1;33m" ;;
 			esac
@@ -47,7 +48,8 @@ function display_alert() {
 
 		info)
 			level_indicator="🌱"
-			case "$(background_dark_or_light)" in
+			case "${background_dark_or_light-missing}" in
+				missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 				light)	inline_logs_color="\e[1;2;32m" ;;
 				*)	inline_logs_color="\e[1;32m" ;;
 			esac
@@ -58,7 +60,8 @@ function display_alert() {
 				skip_screen=1
 			fi
 			level_indicator="🧽"
-			case "$(background_dark_or_light)" in
+			case "${background_dark_or_light-missing}" in
+				missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 				light)	inline_logs_color="\e[1;2;33m" ;;
 				*)	inline_logs_color="\e[1;33m" ;;
 			esac
@@ -150,7 +153,8 @@ function display_alert() {
 
 		ext)
 			level_indicator="✨"
-			case "$(background_dark_or_light)" in
+			case "${background_dark_or_light-missing}" in
+				missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 				light)	inline_logs_color="\e[1;2;32m" ;;
 				*)	inline_logs_color="\e[1;32m" ;;
 			esac
@@ -164,7 +168,8 @@ function display_alert() {
 		*)
 			level="${level:-info}" # for file logging.
 			level_indicator="🌿"
-			case "$(background_dark_or_light)" in
+			case "${background_dark_or_light-missing}" in
+				missing)  printf 'ERROR: MISSING background_dark_or_light! ; (%s:%s) (%s:%s)\n' "${BASH_SOURCE[1]##*/}" "${BASH_LINENO[1]}" "${BASH_SOURCE[2]}" "${BASH_LINENO[2]}"  | logger -t armbian_build_debug -s; exit 2 ;;		#  DEBUG FIXME(dlitz)   
 				dark)	inline_logs_color="\e[1;37m" ;;
 				*)	inline_logs_color="\e[1;39m" ;;
 			esac
